@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neumorphic Login Page with Google</title>
+<style>
+    body {
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #e0e0e0;
+        font-family: Arial, sans-serif;
+        flex-direction: column;
+    }
+    .top-text {
+        position: fixed;
+        top: 10px;
+        color: black;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    .container {
+        background: #e0e0e0;
+        padding: 40px 30px;
+        border-radius: 30px;
+        box-shadow: 8px 8px 15px #bebebe, -8px -8px 15px #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 320px;
+        margin-top: 50px;
+        text-align: center;
+    }
+    .profile-pic {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: url('https://www.w3schools.com/howto/img_avatar.png') center/cover;
+        margin-bottom: 20px;
+        box-shadow: 4px 4px 10px #bebebe, -4px -4px 10px #ffffff;
+    }
+    .container input {
+        width: 80%;
+        padding: 15px;
+        margin: 15px 0;
+        border: none;
+        border-radius: 50px;
+        background: #e0e0e0;
+        box-shadow: inset 8px 8px 15px #bebebe, inset -8px -8px 15px #ffffff;
+        font-size: 1rem;
+        color: #333;
+        outline: none;
+        transition: 0.2s;
+    }
+    .container input:focus {
+        box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff;
+    }
+    .neumorphic-button {
+        margin-top: 20px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 50px;
+        background: #e0e0e0;
+        color: #333;
+        box-shadow: 8px 8px 15px #bebebe, -8px -8px 15px #ffffff;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+    .neumorphic-button:active {
+        box-shadow: inset 8px 8px 15px #bebebe, inset -8px -8px 15px #ffffff;
+    }
+    .google-button {
+        margin-top: 20px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 50px;
+        background: #d93025;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+    .google-button img {
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 4px;
+        padding: 2px;
+    }
+    .google-button:hover {
+        background: #b1271d;
+        transform: scale(1.05);
+    }
+    .msg {
+        margin-top: 15px;
+        height: 20px;
+    }
+</style>
+<!-- مكتبة Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+<div class="top-text">powered by moumen</div>
+
+<!-- واجهة تسجيل الدخول -->
+<div class="container" id="loginContainer">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button class="neumorphic-button" onclick="checkLogin()">Login</button>
+
+    <!-- زر Google -->
+    <div id="g_id_onload"
+        data-client_id="1042159103129-mn40119k1bjqab504him2sfr3up2lhsa.apps.googleusercontent.com"
+        data-context="signin"
+        data-ux_mode="popup"
+        data-callback="handleCredentialResponse"
+        data-auto_select="true"
+        data-itp_support="true">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+
+    <div class="msg" id="msg"></div>
+</div>
+
+<!-- واجهة إنشاء حساب جديد -->
+<div class="container" id="signupContainer" style="display:none;">
+    <div class="profile-pic"></div>
+    <h2>Create New Account</h2>
+    <input type="text" id="newUsername" placeholder="Enter new username" required>
+    <input type="password" id="newPassword" placeholder="Enter new password" required>
+    <button class="neumorphic-button" onclick="saveAccount()">Save Account</button>
+    <div class="msg" id="signupMsg"></div>
+</div>
+
+<script>
+    // تسجيل الدخول التقليدي بكلمة مرور ثابتة
+    function checkLogin() {
+        const password = document.getElementById("password").value;
+        const msg = document.getElementById("msg");
+        if (password === "moumenHK") {
+            msg.style.color = "green";
+            msg.textContent = "Login successful!";
+        } else {
+            msg.style.color = "red";
+            msg.textContent = "Incorrect password!";
+        }
+    }
+
+    // تسجيل الدخول بحساب Google
+    function handleCredentialResponse(response) {
+        const data = parseJwt(response.credential);
+        localStorage.setItem('googleEmail', data.email);
+        localStorage.setItem('googleName', data.name);
+
+        // إظهار واجهة إنشاء الحساب
+        document.getElementById("loginContainer").style.display = "none";
+        document.getElementById("signupContainer").style.display = "flex";
+
+        // ملء اسم المستخدم تلقائياً
+        document.getElementById("newUsername").value = data.name;
+    }
+
+    // حفظ الحساب الجديد
+    function saveAccount() {
+        const username = document.getElementById("newUsername").value.trim();
+        const password = document.getElementById("newPassword").value.trim();
+        const signupMsg = document.getElementById("signupMsg");
+
+        if (username && password) {
+            signupMsg.style.color = "green";
+            signupMsg.textContent = "Account created successfully!";
+        } else {
+            signupMsg.style.color = "red";
+            signupMsg.textContent = "Please fill in all fields.";
+        }
+    }
+
+    // فك تشفير بيانات Google JWT
+    function parseJwt(token) {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+            .split('')
+            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+        return JSON.parse(jsonPayload);
+    }
+</script>
+</body>
+</html>
